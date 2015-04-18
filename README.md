@@ -183,10 +183,13 @@ _注:1_
 
 #サンプルシーンの見かた
 
-　プロジェクトにはサンプルシーンが付属しています。
-　これらはシーンを切り替えればGameビュー上に表示されシーンを実行する必要はありません。
-　素材となる画像は"Test A"、"Test B"の２種類があり、それをコピーして様々な名前をつけています。これはラベルをつけて固有の変換処理をおこなうためで、元々はすべて同じpngファイルです。
-シーンの処理の処理は以下のようになります
+プロジェクトをダウンロードまたはクローンなどしてローカル環境へ持ってきてUnityから初回に開いた段階では、まだテクスチャファイルは正しいフォーマットに設定されていないようです。  
+これは初回のアセットビルド時には、テクスチャアセットのアセットポストプロセッサが起動しないためのような(謎、、とりあえず今のところは全テクスチャを選択してReimportをおこなう等していただけば幸いです。  
+
+プロジェクトにはサンプルシーンが付属しています。
+これらはシーンを切り替えればGameビュー上に表示されシーンを実行する必要はありません。  
+素材となる画像は"Test A"、"Test B"の２種類があり、それをコピーして様々な名前をつけています。これはラベルをつけて固有の変換処理をおこなうためで、元々はすべて同じpngファイルです。  
+シーンの処理の処理は以下のようになります  
 
 1. 素材画像 16bits  
 　_RGBA16bits化して表示_  
@@ -216,17 +219,15 @@ PowerVRの設計元であるImagination Technologies社の提供するテクス�
 
 #今後の課題
 
-__SimpleTextureModifier__はUGUIの__Sprite Packer__を使用したアトラス化に対しては処理をおこなうことはできません。
-これはアトラス化を担当するPackerJobがアセットポストプロセッサを介さずにアトラスをテクスチャを化するからです。
-対応するには、追加のプログラミングが必要になります。
+__SimpleTextureModifier__はUGUIの__Sprite Packer__を使用したアトラス化に対しては処理をおこなうことはできません。  
+これはアトラス化を担当するPackerJobがアセットポストプロセッサを介さずにアトラスをテクスチャを化するからです。  
+対応するには、追加のプログラミングが必要になります。  
 
 #謝辞
 
 このアセットは、構造やプレビュー環境としては全般的にkeijiro氏の  
-[unity-dither4444](https://github.com/keijiro/unity-dither4444)  
-[unity-pvr-cleaner](https://github.com/keijiro/unity-pvr-cleaner)  
-[unity-alphamask](https://github.com/keijiro/unity-alphamask)  
+[unity-dither4444](https://github.com/keijiro/unity-dither4444)、[unity-pvr-cleaner](https://github.com/keijiro/unity-pvr-cleaner)、[unity-alphamask](https://github.com/keijiro/unity-alphamask)  
 を参考にさせていただきました。  
-またテスト画像としては[テラシュールウェア](http://terasur.blog.fc2.com)さんのご厚意によりunity-pvr-cleanerと同じものを使わせていただきました。  
+またテスト画像としては[テラシュールウェア](http://terasur.blog.fc2.com)さんのご厚意によりunity-dither4444など同じものを使わせていただきました。  
 ありがとうございました。  
 なおこれらの著作は上記の方々に属しますので私的な使用以外は避けるようにしてください。  
