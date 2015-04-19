@@ -70,7 +70,11 @@ public class StartupSimpleTextureModifier {
 			if(tex.format==TextureFormat.ETC_RGB4)
 				return false;
 			break;
+#if UNITY_5
 		case BuildTarget.iOS:
+#else
+		case BuildTarget.iPhone:
+#endif
 			if(tex.format==TextureFormat.PVRTC_RGB4 || tex.format==TextureFormat.PVRTC_RGBA4)
 				return false;
 			break;
@@ -135,7 +139,11 @@ public class SimpleTextureModifier : AssetPostprocessor {
 			switch (EditorUserBuildSettings.activeBuildTarget) {
 			case BuildTarget.Android:
 				return TextureFormat.ETC_RGB4;
+#if UNITY_5
 			case BuildTarget.iOS:
+#else
+			case BuildTarget.iPhone:
+#endif
 				return TextureFormat.PVRTC_RGB4;
 			default:
 				return TextureFormat.DXT1;
@@ -148,7 +156,11 @@ public class SimpleTextureModifier : AssetPostprocessor {
 			switch (EditorUserBuildSettings.activeBuildTarget) {
 			case BuildTarget.Android:
 				return TextureFormat.ETC_RGB4;
+#if UNITY_5
 			case BuildTarget.iOS:
+#else
+			case BuildTarget.iPhone:
+#endif
 				return TextureFormat.PVRTC_RGBA4;
 			default:
 				return TextureFormat.DXT5;
