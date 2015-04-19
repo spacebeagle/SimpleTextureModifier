@@ -21,7 +21,7 @@ Unityで主にテクスチャサイズを削減するためのシンプルなア
 
 減色の結果、この例ではグラデーションにマッハバンドが見られます。また肌などの色味が若干変化して見えます。これはUnityの減色があまり適切ではないアルゴリズムでおこなわれているためです。  
 
-そこで__SimpleTextureModifier__を使用して画像にFloyd–Steinbergというディザをかけながら16bitsフォーマットへ減色をおこなってみました。  
+そこでSimpleTextureModifierを使用して画像にFloyd–Steinbergというディザをかけながら16bitsフォーマットへ減色をおこなってみました。  
 結果は以下のようになります  。
 
 ![16bitsDither](https://github.com/spacebeagle/SimpleTextureModifier/raw/gh-pages/Images/Test%20A%2016bits%20FloydSteinberg.png)
@@ -34,7 +34,7 @@ Unityで主にテクスチャサイズを削減するためのシンプルなア
 しかし、ディザリングはUIに使われる画像などには適切ではないことがあります。  
 ディザリングは元画像にノイズを乗せるためにドットバイドット以上の拡大をおこなうと、ディザのパターンも拡大されてしまって目立つことがあるからです。  
 これはUGUIのようなUIシステムでよく使われる9パッチという仕組みで顕著に問題になります。UGUIでは[ImageコンポーネントのSlicedを選択すると使用できる機能で](http://docs.unity3d.com/ja/current/Manual/script-Image.html)、画像9つの部分に分割して拡大縮小の制御をおこなうことによって、サイズ変更に柔軟なUI部品にするものです。この場合、9つのパーツの一つである画像の一部が極端に拡大されるようなことが容易におこるため、ディザリングの問題が顕著化しやすいといえます。  
-__SimpleTextureModifier__ではこうした問題に対応するために、16bitsへの減色のみをおこなう機能を用意しました。  
+SimpleTextureModifierではこうした問題に対応するために、16bitsへの減色のみをおこなう機能を用意しました。  
 9パッチ等の拡大表示を伴う画像は単純な16bits減色、伴わない画像はディザリングをおこなう16bits減色を選択することが可能です。  
 
 
@@ -79,7 +79,7 @@ RGBチャンネルの画像のエッジには圧縮を助けるためBleeding処
 
 ###圧縮テクスチャのマルチプラットフォーム対応
 
-__SimpleTextureModifier__は__Switch Platform__に対応しているのでプラットフォーム切り替え時にプラットフォームごとに可能な圧縮フォーマットを出力します。  
+SimpleTextureModifierは__Switch Platform__に対応しているのでプラットフォーム切り替え時にプラットフォームごとに可能な圧縮フォーマットを出力します。  
 iOSにおいて、圧縮テクスチャは  
 
 ・_RGBA PVRTC 4bitsフォーマット_  
@@ -113,21 +113,26 @@ MicroSoft系プラットフォームで使える圧縮テクスチャ形式__DXT
 
 このようにプラットフォームごとに最適な圧縮フォーマットは異なっています。  
 しかし様々なプラットフォーム上で共通にアセットデータを使いまわすには、各プラットフォームの公約数を考えるとかありません。  
-幸いにもWindows、Mac等のPC上では比較的万能なDXTを使用できますので、iOSとAndroidで共通の設定を考えるなら__RGB+A__で２枚のテクスチャに分割する方法が__SimpleTextureModifier__のみで処理できる範囲といえるでしょう。  
+幸いにもWindows、Mac等のPC上では比較的万能なDXTを使用できますので、iOSとAndroidで共通の設定を考えるなら__RGB+A__で２枚のテクスチャに分割する方法がSimpleTextureModifierのみで処理できる範囲といえるでしょう。  
 
 #SimpleTextureModifierを使用する
 
-__SimpleTextureModifier__はUnityAssets下のEditorデイレクトリのどれかに、_SimpleTextureModifier.cs_と_SimpleTextureModifierSetting.cs_が存在すれば動作します。  
+SimpleTextureModifierはUnityAssets下のEditorデイレクトリのどれかに、_SimpleTextureModifier.cs_と_SimpleTextureModifierSetting.cs_が存在すれば動作します。  
 気をつけなければいけないのは、 
 UnityのEdit>Preferences..を選択すると出てくる__Unity Preferencesウインドウ__の__TextureModifier__にある__SimpleTextureModifier Enable__スイッチが__ON__であることです。  
-ONでないと圧縮テクスチャの出力など__SimpleTextureModifier__の最終処理がおこなわれません。  
+ONでないと圧縮テクスチャの出力などSimpleTextureModifierの最終処理がおこなわれません。  
 これはAndroidプラットフォーム上でのETC圧縮処理などのきわめて時間がかかる処理をスキップするために存在している機能です。  
-また処理をおこなうテクスチャアセットの出力フォーマット設定は、ARGB32bit、RGBA32bit、Truecolorなどの32bitsフォーマットにしておいてください。これは__SimpleTextureModifier__の処理の前後に余計な処理が入らないようにするために必要となっています。  
+また処理をおこなうテクスチャアセットの出力フォーマット設定は、ARGB32bit、RGBA32bit、Truecolorなどの32bitsフォーマットにしておいてください。これはSimpleTextureModifierの処理の前後に余計な処理が入らないようにするために必要となっています。  
+
+プロジェクトをダウンロードしてきたりした場合の初回起動時はSimpleTextureModifierが処理をおこなわないので、projectビュー上でマウスの右ボタン(Windowsの場合)を押して、メニュー__Texture Util__内の__Reimport All texture__を実行してください。  
+初回起動時、及びマウス右ボタン直下のReimport Allを実行した後は、SimpleTextureModifierによる変換はクリアーされてしまうので、必ず上記__ReImport All texture__を実行するようにしてください。  
+これは初回起動時やReimport Allからアセットポストプロセッサが起動された段階では、まだアセットにラベルが設定されていないからです。このためSimpleTextureModifierは処理をおこなうことができません。  
+またSimpleTextureModifierのReimport All textureは後述のTexture Outputラベルを持たないテクスチャアセットをReimportすることはできません。これはReimport処理が必要な処理済みテクスチャかどうかを判別することができないからです。
 
 #SimpleTextureModifierの使い方
 
-__SimpleTextureModifier__はテクスチャアセットにラベルを設定することにより、アセットポストプロセッサが処理をおこないます。  
-テクスチャにはラベルをセットするだけですから、__Apply__ボタンがオンにはなりません、テクスチャのImport Settingのいずれかを操作して__Apply__ボタンをオンにしてからそれを押すか、Projectのテクスチャアセットを選択した状態でマウスの右ボタン(Windowsの場合)を押してReimportを選んで強制的にインポート処理が走るようにしてください。  
+SimpleTextureModifierはテクスチャアセットにラベルを設定することにより、アセットポストプロセッサが処理をおこないます。  
+テクスチャにはラベルをセットするだけですから、__Apply__ボタンがオンにはなりません、テクスチャのImport Settingのいずれかを操作して__Apply__ボタンをオンにしてからそれを押すか、Projectのテクスチャアセットを選択した状態でマウスの右ボタンを押してReimportを選んで強制的にインポート処理が走るようにしてください。  
 
 ラベルはテクスチャアセット上でマウスの右ボタンを押して、__Texture Util__から内から選択して設定することができます。  
 ラベルは３つのカテゴリにわかれています。  
@@ -183,11 +188,6 @@ _注:1_
 
 #サンプルシーンの見かた
 
-Unity5.0からの仕様なのか、、プロジェクトをダウンロードまたはクローンなどしてローカル環境へ持ってきてUnityから初回に開いた段階では、まだテクスチャファイルは正しいフォーマットに設定されていないようです。  
-初回のアセットビルド時には、テクスチャアセットのアセットポストプロセッサが起動しないためのような(謎、、とりあえず今のところは全テクスチャを選択してReimportをおこなう等していただけば幸いです。  
-
-
-
 プロジェクトにはサンプルシーンが付属しています。
 これらはシーンを切り替えればGameビュー上に表示されシーンを実行する必要はありません。  
 素材となる画像は"Test A"、"Test B"の２種類があり、それをコピーして様々な名前をつけています。これはラベルをつけて固有の変換処理をおこなうためで、元々はすべて同じpngファイルです。  
@@ -221,7 +221,10 @@ PowerVRの設計元であるImagination Technologies社の提供するテクス�
 
 #今後の課題
 
-__SimpleTextureModifier__はUGUIの__Sprite Packer__を使用したアトラス化に対しては処理をおこなうことはできません。  
+すでに述べたように_初回起動時、及びReimport Allを実行した後_はSimpleTextureModifierによる処理結果は消えてしまっています。
+直後にSimpleTextureModifier自身のReImport All Textureを実行するような方法があればよいのですが、現在は対応していません。
+
+SimpleTextureModifierはUGUIの__Sprite Packer__を使用したアトラス化に対しては処理をおこなうことはできません。  
 これはアトラス化を担当するPackerJobがアセットポストプロセッサを介さずにアトラスをテクスチャを化するからです。  
 対応するには、追加のプログラミングが必要になります。  
 

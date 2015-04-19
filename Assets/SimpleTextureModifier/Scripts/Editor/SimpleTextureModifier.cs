@@ -14,24 +14,54 @@ public class StartupSimpleTextureModifier {
         EditorUserBuildSettings.activeBuildTargetChanged += OnChangePlatform;
     }
 
-    [UnityEditor.MenuItem("Assets/Texture Util/ReImport All Compress Texture", false, 1)]
+    [UnityEditor.MenuItem("Assets/Texture Util/Reimport All Texture", false, 1)]
     static void OnChangePlatform() {
         Debug.Log(" TextureModifier Convert Compress Texture");
-        string labels = "t:Texture";
-        foreach(var type in SimpleTextureModifier.compressOutputs){
-            labels+=" l:"+type.ToString();
-        }
+		string clabels = "t:Texture";
+		foreach(var type in SimpleTextureModifier.compressOutputs){
+			clabels+=" l:"+type.ToString();
+		}
+		string rlabels = "t:Texture";
+		foreach(var type in SimpleTextureModifier.RGBA16bitsOutputs){
+			rlabels+=" l:"+type.ToString();
+		}
+		string plabels = "t:Texture";
+		foreach(var type in SimpleTextureModifier.PNGOutputs){
+			plabels+=" l:"+type.ToString();
+		}
+		string jlabels = "t:Texture";
+		foreach(var type in SimpleTextureModifier.JPGOutputs){
+			jlabels+=" l:"+type.ToString();
+		}
 		AssetDatabase.StartAssetEditing ();
-      	var assets = AssetDatabase.FindAssets(labels,null);
-        foreach (var asset in assets) {
-            var path=AssetDatabase.GUIDToAssetPath(asset);
-			if (CheckTargetTexture(path))
-				AssetDatabase.ImportAsset(path);
-        }
+		{
+			var assets = AssetDatabase.FindAssets (clabels, null);
+			foreach (var asset in assets) {
+				var path = AssetDatabase.GUIDToAssetPath (asset);
+				if (CheckTargetCompressTexture (path))
+					AssetDatabase.ImportAsset (path);
+			}
+		}
+		{
+			var assets = AssetDatabase.FindAssets (rlabels, null);
+			foreach (var asset in assets) {
+				var path = AssetDatabase.GUIDToAssetPath (asset);
+				if (CheckTargetPNGTexture (path))
+					AssetDatabase.ImportAsset (path);
+			}
+		}
+		{
+			var assets = AssetDatabase.FindAssets (plabels, null);
+			foreach (var asset in assets) {
+				var path = AssetDatabase.GUIDToAssetPath (asset);
+				if (CheckTargetJPGTexture (path))
+					AssetDatabase.ImportAsset (path);
+			}
+		}
 		AssetDatabase.StopAssetEditing ();
 	}
 
-	static bool CheckTargetTexture(string path){
+	static bool CheckTargetCompressTexture(string path){
 		if (String.IsNullOrEmpty (path))
 			return false;
 		Texture2D tex=AssetDatabase.LoadAssetAtPath(path,typeof(Texture2D)) as Texture2D;
@@ -49,6 +79,31 @@ public class StartupSimpleTextureModifier {
 				return false;
 			break;
 		}
+		return true;
+	}
+
+	static bool CheckTargetRGBA16bitsTexture(string path){
+		if (String.IsNullOrEmpty (path))
+			return false;
+		Texture2D tex=AssetDatabase.LoadAssetAtPath(path,typeof(Texture2D)) as Texture2D;
+		if(tex.format==TextureFormat.RGBA4444 || tex.format==TextureFormat.ARGB4444)
+			return false;
+		return true;
+	}
+	static bool CheckTargetPNGTexture(string path){
+		if (String.IsNullOrEmpty (path))
+			return false;
+		Texture2D tex=AssetDatabase.LoadAssetAtPath(path+"RGBA",typeof(Texture2D)) as Texture2D;
+		if(tex!=null)
+			return false;
+		return true;
+	}
+	static bool CheckTargetJPGTexture(string path){
+		if (String.IsNullOrEmpty (path))
+			return false;
+		Texture2D tex=AssetDatabase.LoadAssetAtPath(path+"RGB",typeof(Texture2D)) as Texture2D;
+		if(tex!=null)
+			return false;
 		return true;
 	}
 }
@@ -153,7 +208,11 @@ public class SimpleTextureModifier : AssetPostprocessor {
     public readonly static List<TextureModifierType> compressOutputs = new List<TextureModifierType>{
                                                                              TextureModifierType.CCompressed,TextureModifierType.CCompressedNA,TextureModifierType.CCompressedWA
                                                                              ,TextureModifierType.TCompressed,TextureModifierType.TCompressedNA,TextureModifierType.TCompressedWA};
-    static void ClearLabel(List<TextureModifierType> types, bool ImportAsset = true) {
+	public readonly static List<TextureModifierType> RGBA16bitsOutputs = new List<TextureModifierType>{TextureModifierType.C16bits};
+	public readonly static List<TextureModifierType> PNGOutputs = new List<TextureModifierType>{TextureModifierType.TPNG};
+	public readonly static List<TextureModifierType> JPGOutputs = new List<TextureModifierType>{TextureModifierType.TJPG};
+
+	static void ClearLabel(List<TextureModifierType> types, bool ImportAsset = true) {
 		List<UnityEngine.Object> objs=new List<UnityEngine.Object>(Selection.objects);
 		foreach(var obj in objs){
 			if(obj is Texture2D){
@@ -349,7 +408,7 @@ public class SimpleTextureModifier : AssetPostprocessor {
 			break;
 		}}
         //return;
-        if (EditorPrefs.GetBool(KEY, false)) {
+        if (EditorPrefs.GetBool(KEY, true)) {
             switch (outputType) {
                 case TextureModifierType.C16bits: {
                     texture.SetPixels(pixels);
