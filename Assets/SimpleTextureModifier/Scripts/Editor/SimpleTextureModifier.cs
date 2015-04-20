@@ -17,7 +17,8 @@ public class StartupSimpleTextureModifier {
     [UnityEditor.MenuItem("Assets/Texture Util/Reimport All Texture", false, 1)]
     static void OnChangePlatform() {
         Debug.Log(" TextureModifier Convert Compress Texture");
-		string clabels = "t:Texture";
+        string labels = "t:Texture";
+        string clabels = "t:Texture";
 		foreach(var type in SimpleTextureModifier.compressOutputs){
 			clabels+=" l:"+type.ToString();
 		}
@@ -34,7 +35,20 @@ public class StartupSimpleTextureModifier {
 			jlabels+=" l:"+type.ToString();
 		}
 		AssetDatabase.StartAssetEditing ();
-		{
+        {
+            var assets = AssetDatabase.FindAssets(labels, null);
+            foreach (var asset in assets) {
+                var path = AssetDatabase.GUIDToAssetPath(asset);
+                var obj = AssetDatabase.LoadAssetAtPath(path,typeof(Texture));
+                var importer = AssetImporter.GetAtPath(path);
+                if (obj != null && importer != null) {
+                    List<string> lb = new List<string>(AssetDatabase.GetLabels(obj));
+                    importer.userData = String.Join(",", lb.ToArray());
+                    AssetDatabase.WriteImportSettingsIfDirty(path);
+                }
+            }
+        }
+        {
 			var assets = AssetDatabase.FindAssets (clabels, null);
 			foreach (var asset in assets) {
 				var path = AssetDatabase.GUIDToAssetPath (asset);
@@ -237,7 +251,11 @@ public class SimpleTextureModifier : AssetPostprocessor {
 					}
 				});
 				AssetDatabase.SetLabels(obj,newLabels.ToArray());
-			}
+                var importer=AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(obj));
+                importer.userData = String.Join(",", newLabels.ToArray());
+                EditorUtility.SetDirty(obj);
+                AssetDatabase.WriteImportSettingsIfDirty(AssetDatabase.GetAssetPath(obj));
+            }
 		}
 	}
 
@@ -249,14 +267,10 @@ public class SimpleTextureModifier : AssetPostprocessor {
 				List<string> labels=new List<string>(AssetDatabase.GetLabels(obj));
 				labels.Add(label);
 				AssetDatabase.SetLabels(obj,labels.ToArray());
-				EditorUtility.SetDirty(obj);
+                var importer = AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(obj));
+                importer.userData = String.Join(",", labels.ToArray());
+                EditorUtility.SetDirty(obj);
                 AssetDatabase.WriteImportSettingsIfDirty(AssetDatabase.GetAssetPath(obj));
-                foreach(Editor ed in (Editor[])UnityEngine.Resources.FindObjectsOfTypeAll(typeof(Editor))){
-					if(ed.target==obj){
-						ed.Repaint();
-						EditorUtility.SetDirty(ed);
-					}
-				}
 			}
 		}
 	}
@@ -365,9 +379,11 @@ public class SimpleTextureModifier : AssetPostprocessor {
 		var importer = (assetImporter as TextureImporter);
 		UnityEngine.Object obj=AssetDatabase.LoadAssetAtPath(assetPath,typeof(Texture2D));
 		var labels=new List<string>(AssetDatabase.GetLabels(obj));
-
+        if (labels == null || labels.Count == 0)
+            labels = importer.userData.Split(","[0]).ToList();
 		foreach(string label in labels){
-			if(Enum.IsDefined(typeof(TextureModifierType),label)){
+            if (Enum.IsDefined(typeof(TextureModifierType), label))
+            {
 				TextureModifierType type=(TextureModifierType)Enum.Parse(typeof(TextureModifierType),label);
 				if(effecters.Contains(type)){
 					effecterType=type;
