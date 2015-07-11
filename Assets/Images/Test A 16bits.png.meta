@@ -2,7 +2,6 @@ fileFormatVersion: 2
 guid: d36b4f5870b84ac42b5b7c2c5e6dc936
 labels:
 - C16bits
-- AlphaBleed
 timeCreated: 1428931950
 licenseType: Free
 TextureImporter:
@@ -47,12 +46,12 @@ TextureImporter:
   spritePivot: {x: .5, y: .5}
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spritePixelsToUnits: 100
-  alphaIsTransparency: 0
+  alphaIsTransparency: 1
   textureType: 8
   buildTargetSettings: []
   spriteSheet:
     sprites: []
   spritePackingTag: 
-  userData: 
+  userData: C16bits
   assetBundleName: 
   assetBundleVariant: 

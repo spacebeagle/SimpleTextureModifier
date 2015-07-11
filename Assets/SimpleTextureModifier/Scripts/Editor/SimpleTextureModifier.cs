@@ -127,7 +127,8 @@ public class StartupSimpleTextureModifier {
 }
 
 public class SimpleTextureModifier : AssetPostprocessor {
-	public static readonly string KEY = "SimpleTextureModifier Enable";
+	public static readonly string KEY = "Texture Output Enable";
+	public static readonly string FORCESTMSETTING = "Force STM Setting";
 
 	public enum TextureModifierType {
 		None,
@@ -396,9 +397,13 @@ public class SimpleTextureModifier : AssetPostprocessor {
 				}
 			}
 		}
+		if (!String.IsNullOrEmpty (importer.spritePackingTag))
+			return;
 		if(effecterType!=TextureModifierType.None || modifierType!=TextureModifierType.None || outputType!=TextureModifierType.None){
+			if(!EditorPrefs.GetBool(FORCESTMSETTING, true))
+				return;
 			importer.alphaIsTransparency=false;
-			importer.compressionQuality = (int)TextureCompressionQuality.Best;
+//			importer.compressionQuality = (int)TextureCompressionQuality.Best;
 			if(importer.textureFormat==TextureImporterFormat.Automatic16bit)
 				importer.textureFormat = TextureImporterFormat.AutomaticTruecolor;
 			else if(importer.textureFormat==TextureImporterFormat.AutomaticCompressed)

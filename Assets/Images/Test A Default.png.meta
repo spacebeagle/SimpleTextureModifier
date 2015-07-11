@@ -40,18 +40,18 @@ TextureImporter:
   rGBM: 0
   compressionQuality: 100
   spriteMode: 1
-  spriteExtrude: 1
+  spriteExtrude: 0
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: .5, y: .5}
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spritePixelsToUnits: 100
-  alphaIsTransparency: 0
-  textureType: 8
+  alphaIsTransparency: 1
+  textureType: 5
   buildTargetSettings: []
   spriteSheet:
     sprites: []
-  spritePackingTag: 
-  userData: 
+  spritePackingTag: Test
+  userData: CCompressed
   assetBundleName: 
   assetBundleVariant: 
