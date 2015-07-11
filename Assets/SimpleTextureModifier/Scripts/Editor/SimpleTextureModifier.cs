@@ -219,8 +219,10 @@ public class SimpleTextureModifier : AssetPostprocessor {
 		if (m_LabelGUIField == null || m_CurrentAssetsSetField == null)
 			return;
 		var editorWindows = Resources.FindObjectsOfTypeAll (typeof(EditorWindow)) as EditorWindow[];
+//		Debug.Log("m_LabelGUIField="+m_LabelGUIField);
 		foreach (var ew in editorWindows) {
-			if (ew.title == "UnityEditor.InspectorWindow") {
+//			Debug.Log("editorWindow="+ew.title);
+			if (ew.title=="UnityEditor.InspectorWindow" || ew.title=="Inspector") { // "UnityEditor.InspectorWindow"<=v4 "Inspector">=v5
 				var labelGUIObject = m_LabelGUIField.GetValue(ew);
 				m_CurrentAssetsSetField.SetValue(labelGUIObject,null);
 			}
@@ -253,8 +255,11 @@ public class SimpleTextureModifier : AssetPostprocessor {
 				});
 				AssetDatabase.SetLabels(obj,newLabels.ToArray());
                 var importer=AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(obj));
-                importer.userData = String.Join(",", newLabels.ToArray());
-                EditorUtility.SetDirty(obj);
+				if(newLabels.Count>0)
+					importer.userData = String.Join(",", newLabels.ToArray());
+				else
+					importer.userData = null;
+				EditorUtility.SetDirty(obj);
                 AssetDatabase.WriteImportSettingsIfDirty(AssetDatabase.GetAssetPath(obj));
             }
 		}
@@ -269,7 +274,10 @@ public class SimpleTextureModifier : AssetPostprocessor {
 				labels.Add(label);
 				AssetDatabase.SetLabels(obj,labels.ToArray());
                 var importer = AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(obj));
-                importer.userData = String.Join(",", labels.ToArray());
+				if(labels.Count>0)
+	                importer.userData = String.Join(",", labels.ToArray());
+				else
+					importer.userData = null;
                 EditorUtility.SetDirty(obj);
                 AssetDatabase.WriteImportSettingsIfDirty(AssetDatabase.GetAssetPath(obj));
 			}
@@ -380,8 +388,13 @@ public class SimpleTextureModifier : AssetPostprocessor {
 		var importer = (assetImporter as TextureImporter);
 		UnityEngine.Object obj=AssetDatabase.LoadAssetAtPath(assetPath,typeof(Texture2D));
 		var labels=new List<string>(AssetDatabase.GetLabels(obj));
-        if (labels == null || labels.Count == 0)
-            labels = importer.userData.Split(","[0]).ToList();
+        if (labels == null || labels.Count == 0) {
+			if(!String.IsNullOrEmpty(importer.userData)) {
+				labels = importer.userData.Split ("," [0]).ToList ();
+				AssetDatabase.SetLabels(obj,labels.ToArray());
+				SetLabelSetingsDirty ();
+			}
+		}
 		foreach(string label in labels){
             if (Enum.IsDefined(typeof(TextureModifierType), label))
             {
