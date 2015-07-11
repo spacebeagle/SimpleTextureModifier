@@ -223,14 +223,20 @@ _注:2_
 PowerVRの設計元であるImagination Technologies社の提供するテクスチャツール。  
 圧縮画質向上の方法としてAlpha BleedingとPremultiplied Alpha(事前乗算済みアルファ)を提供している。  
 
+#バージョンアップ情報
+
+今回パッキングタグの有無を確認して、タグがあるばあいアトラスの一部であると判断して、Texture Import Settingをおこなわないようにしました。
+これで一応アトラス化が可能になったと思います。
+ただ、圧縮テクスチャへの対応等は、アトラス作成プログラムの側を変更する必要もあると思いますので今後の課題とします。
+
 #今後の課題
 
 すでに述べたように_初回起動時、及びReimport Allを実行した後_はSimpleTextureModifierによる処理結果は消えてしまっています。
 直後にSimpleTextureModifier自身のReImport All Textureを実行するような方法があればよいのですが、現在は対応していません。
 
-SimpleTextureModifierはUGUIの__Sprite Packer__を使用したアトラス化に対しては処理をおこなうことはできません。  
+~~SimpleTextureModifierはUGUIの__Sprite Packer__を使用したアトラス化に対しては処理をおこなうことはできません。  
 これはアトラス化を担当するPackerJobがアセットポストプロセッサを介さずにアトラスをテクスチャを化するからです。  
-対応するには、追加のプログラミングが必要になります。  
+対応するには、追加のプログラミングが必要になります。~~  
 
 #謝辞
 
