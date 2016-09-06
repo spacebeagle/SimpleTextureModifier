@@ -620,18 +620,27 @@ public class SimpleTextureModifier : AssetPostprocessor {
 		return np;
 	}
 
+	enum BlockMode : byte {
+		Untreated,
+		Processing,
+		Termination
+	};
 	static readonly int BlockSize=4;
 	static public Color[] AlphaBleed(Color[] pixels,int width,int height){
 		Color[] np= new Color[height*width];
-		int blockHeight = (int)(height-1)/BlockSize+1;
-		int blockWidth = (int)(width-1)/BlockSize+1;
-		Color[] bc= new Color[blockHeight*blockWidth]; 
+		int blockHeight= (int)(height-1)/BlockSize+1;
+		int blockWidth= (int)(width-1)/BlockSize+1;
+		Color[] bc= new Color[blockHeight*blockWidth];
+		BlockMode[] bf= new BlockMode[blockHeight*blockWidth];
+		int remaining = 0;
+		bool exitFlag = true;
 		for (var yb = 0; yb < blockHeight; yb++) {
 			for (var xb = 0; xb < blockWidth; xb++) {
 				float r = 0.0f;
 				float g = 0.0f;
 				float b = 0.0f;
 				float c = 0.0f;
+				int n = 0;
 				for (var y = 0; y < BlockSize; y++) {
 					for (var x = 0; x < BlockSize; x++) {
 						int xpos = xb * BlockSize + x;
@@ -643,57 +652,94 @@ public class SimpleTextureModifier : AssetPostprocessor {
 							g += pixels [pos].g * ad;	
 							b += pixels [pos].b * ad;
 							c += ad;
+							if (ad <= 0.02f)
+								n++;
 						}
 					}
 				}
-				if(c>0.0f)
-					bc[yb*blockWidth+xb]=new Color(r/c,g/c,b/c,c/(float)(BlockSize*BlockSize));
-				else
-					bc[yb*blockWidth+xb]=new Color(0.0f,0.0f,0.0f,0.0f);
+				var block = yb * blockWidth + xb;
+				if (n > 0) {
+					bf [block] = BlockMode.Processing;
+					remaining++;
+				} else {
+					bf [block] = BlockMode.Termination;
+				}
+				if (c <= 0.02f) {
+					bc [ block ] = new Color (0.0f, 0.0f, 0.0f, 0.0f);
+					bf [ block ] = BlockMode.Untreated;
+				} else {
+					bc [ block ] = new Color (r / c, g / c, b / c, c / (float)(BlockSize * BlockSize));
+					exitFlag = false;
+				}
 			}
 		}
-		for (var yb = 0; yb < blockHeight; yb++) {
-			for (var xb = 0; xb < blockWidth; xb++) {
-				float r = 0.0f;
-				float g = 0.0f;
-				float b = 0.0f;
-				float c = 0.0f;
-				Color ccol = bc[yb*blockWidth+xb];
-				r+=(ccol.r*ccol.a*15.0f);
-				g+=(ccol.g*ccol.a*15.0f);
-				b+=(ccol.b*ccol.a*15.0f);
-				c+=(ccol.a*15.0f);
-				for (var y = yb-1; y <= yb+1; y++) {
-					for (var x = xb-1; x <= xb+1; x++) {
-						if(x>=0 && x<blockWidth && y>=0 && y<blockHeight) {
-							Color col = bc[y*blockWidth+x];
-							r+=col.r*col.a;
-							g+=col.g*col.a;
-							b+=col.b*col.a;
-							c+=col.a;
+		if ( exitFlag || remaining==0 )
+			return pixels;
+		for (var y = 0; y < height; y++) {
+			for (var x = 0; x < width; x++) {
+				int pos = y * width + x;
+				np [pos] = pixels [pos];
+			}
+		}
+		BlockMode[] be= new BlockMode[blockHeight*blockWidth];
+		for (int count=16; count > 0 && remaining > 0; count-- ) {
+			for (int i=0;i < blockHeight*blockWidth ; i++ )
+				be[i] = bf[i];
+			for (var yb = 0; yb < blockHeight; yb++) {
+				for (var xb = 0; xb < blockWidth; xb++) {
+					var block = yb * blockWidth + xb;
+					if (be [ block ] == BlockMode.Termination)
+						continue;
+					float r = 0.0f;
+					float g = 0.0f;
+					float b = 0.0f;
+					float c = 0.0f;
+					Color ccol = bc [yb * blockWidth + xb];
+					r += (ccol.r * ccol.a * 16.0f);
+					g += (ccol.g * ccol.a * 16.0f);
+					b += (ccol.b * ccol.a * 16.0f);
+					c += (ccol.a * 16.0f);
+					int n = 0;
+					for (var yp = yb - 1; yp <= yb + 1; yp++) {
+						for (var xp = xb - 1; xp <= xb + 1; xp++) {
+							var x = ( xp + blockWidth) % blockWidth;
+							var y = ( yp + blockHeight) % blockHeight;
+							if (be [y * blockWidth + x] != BlockMode.Untreated)
+								n++;
+							Color col = bc [y * blockWidth + x];
+							r += col.r * col.a;
+							g += col.g * col.a;
+							b += col.b * col.a;
+							c += col.a;
 						}
 					}
-				}
-				if(c>0.0f){
-					r/=c;
-					g/=c;
-					b/=c;
-				}
-				for (var y = 0; y < BlockSize; y++) {
-					for (var x = 0; x < BlockSize; x++) {
-						int xpos=xb*BlockSize+x;
-						int ypos=yb*BlockSize+y;
-						if(xpos<width && ypos<height) {
-							int pos=ypos*width+xpos;
-							if (pixels[pos].a <= 0.02f) {
-								float ar = 1.0f-pixels[pos].a;
-								np[pos]=new Color( r*ar+pixels[pos].r*(1.0f-ar)
-							    	              ,g*ar+pixels[pos].g*(1.0f-ar)
-							        	          ,b*ar+pixels[pos].b*(1.0f-ar)
-							            	      ,pixels[pos].a);
-							}else
-								np[pos]=pixels[pos];
+					if( n > 0 ) {
+						if (c > 0.0f) {
+							r /= c; g /= c; b /= c; c /= 24.0f;
+						} else {
+							r = 0.0f; g = 0.0f; b = 0.0f; c = 0.0f;
 						}
+						for (var y = 0; y < BlockSize; y++) {
+							for (var x = 0; x < BlockSize; x++) {
+								int xpos = xb * BlockSize + x;
+								int ypos = yb * BlockSize + y;
+								if (xpos < width && ypos < height) {
+									int pos = ypos * width + xpos;
+									if (pixels [pos].a <= 0.02f) {
+										float ar = 1.0f - pixels [pos].a;
+										np [pos] = new Color (r * ar + pixels [pos].r * (1.0f - ar)
+											, g * ar + pixels [pos].g * (1.0f - ar)
+											, b * ar + pixels [pos].b * (1.0f - ar)
+											, pixels [pos].a);
+									} else
+										np [pos] = pixels[pos];
+								}
+							}
+						}
+						if( be [yb * blockWidth + xb] == BlockMode.Untreated )
+							bc [yb * blockWidth + xb] = new Color (r, g, b, c);
+						bf [yb * blockWidth + xb] = BlockMode.Termination;
+						remaining--;
 					}
 				}
 			}
