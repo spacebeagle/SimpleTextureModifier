@@ -7,9 +7,10 @@ using System.IO;
 using System.Linq;
 using System;
 
+namespace SimpleTextureModifier {
 [InitializeOnLoad]
-public class StartupSimpleTextureModifier {
-    static StartupSimpleTextureModifier() {
+public class StartupTextureModifier {
+    static StartupTextureModifier() {
         Debug.Log("Initialized TextureModifier");
         EditorUserBuildSettings.activeBuildTargetChanged += OnChangePlatform;
     }
@@ -19,19 +20,19 @@ public class StartupSimpleTextureModifier {
         Debug.Log(" TextureModifier Convert Compress Texture");
         string labels = "t:Texture";
         string clabels = "t:Texture";
-		foreach(var type in SimpleTextureModifier.compressOutputs){
+		foreach(var type in TextureModifier.compressOutputs){
 			clabels+=" l:"+type.ToString();
 		}
 		string rlabels = "t:Texture";
-		foreach(var type in SimpleTextureModifier.RGBA16bitsOutputs){
+		foreach(var type in TextureModifier.RGBA16bitsOutputs){
 			rlabels+=" l:"+type.ToString();
 		}
 		string plabels = "t:Texture";
-		foreach(var type in SimpleTextureModifier.PNGOutputs){
+		foreach(var type in TextureModifier.PNGOutputs){
 			plabels+=" l:"+type.ToString();
 		}
 		string jlabels = "t:Texture";
-		foreach(var type in SimpleTextureModifier.JPGOutputs){
+		foreach(var type in TextureModifier.JPGOutputs){
 			jlabels+=" l:"+type.ToString();
 		}
 		AssetDatabase.StartAssetEditing ();
@@ -126,7 +127,7 @@ public class StartupSimpleTextureModifier {
 	}
 }
 
-public class SimpleTextureModifier : AssetPostprocessor {
+public class TextureModifier : AssetPostprocessor {
 	public static readonly string KEY = "Texture Output Enable";
 	public static readonly string FORCESTMSETTING = "Force STM Setting";
 
@@ -193,7 +194,7 @@ public class SimpleTextureModifier : AssetPostprocessor {
 	}
 	
 	readonly static List<List<Position2>> bleedTable;
-	static SimpleTextureModifier(){
+	static TextureModifier(){
 		bleedTable=new List<List<Position2>>();
 		for(int i=1;i<=8;i++){
 			var bT=new List<Position2>();
@@ -413,7 +414,7 @@ public class SimpleTextureModifier : AssetPostprocessor {
 		if (!String.IsNullOrEmpty (importer.spritePackingTag))
 			return;
 		if(effecterType!=TextureModifierType.None || modifierType!=TextureModifierType.None || outputType!=TextureModifierType.None){
-			if(!EditorPrefs.GetBool(FORCESTMSETTING, true))
+			if(!SimpleTextureModifierSettings.ForceSTMSetting)
 				return;
 			importer.alphaIsTransparency=false;
 //			importer.compressionQuality = (int)TextureCompressionQuality.Best;
@@ -454,7 +455,7 @@ public class SimpleTextureModifier : AssetPostprocessor {
 			break;
 		}}
         //return;
-        if (EditorPrefs.GetBool(KEY, true)) {
+		if (SimpleTextureModifierSettings.Key) {
             switch (outputType) {
                 case TextureModifierType.C16bits: {
                     texture.SetPixels(pixels);
@@ -889,4 +890,5 @@ public class SimpleTextureModifier : AssetPostprocessor {
 		}
 		return pixels;
 	}
+}
 }
