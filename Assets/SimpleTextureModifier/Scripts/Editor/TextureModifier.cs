@@ -216,6 +216,25 @@ public class TextureModifier : AssetPostprocessor {
 	                                                                         ,BindingFlags.GetField | BindingFlags.SetField | BindingFlags.NonPublic | BindingFlags.Instance);
 	readonly static FieldInfo m_CurrentAssetsSetField = labelGUIType.GetField("m_CurrentAssetsSet"
 	                                                                          ,BindingFlags.GetField | BindingFlags.SetField | BindingFlags.NonPublic | BindingFlags.Instance);
+
+	static void ApplySettings() {
+		var editors = Resources.FindObjectsOfTypeAll (typeof(Editor)) as Editor[];
+		List<UnityEngine.Object> objs=new List<UnityEngine.Object>(Selection.objects);
+		foreach(var obj in objs){
+			if (obj is Texture2D) {
+				TextureImporter importer = AssetImporter.GetAtPath (AssetDatabase.GetAssetPath (obj)) as TextureImporter;
+				if (importer == null)
+					continue;
+				foreach (var editor in editors) {
+					if (editor.target == importer) {
+						var serializedObject = editor.serializedObject;
+						serializedObject.ApplyModifiedPropertiesWithoutUndo ();
+					}
+				}
+			}
+		}
+	}
+
 	static void SetLabelSetingsDirty() {
 		if (m_LabelGUIField == null || m_CurrentAssetsSetField == null)
 			return;
@@ -226,6 +245,28 @@ public class TextureModifier : AssetPostprocessor {
 			if (ew.title=="UnityEditor.InspectorWindow" || ew.title=="Inspector") { // "UnityEditor.InspectorWindow"<=v4 "Inspector">=v5
 				var labelGUIObject = m_LabelGUIField.GetValue(ew);
 				m_CurrentAssetsSetField.SetValue(labelGUIObject,null);
+			}
+		}
+		var editors = Resources.FindObjectsOfTypeAll (typeof(Editor)) as Editor[];
+		List<UnityEngine.Object> objs=new List<UnityEngine.Object>(Selection.objects);
+		foreach(var obj in objs){
+			if (obj is Texture2D) {
+				TextureImporter importer = AssetImporter.GetAtPath (AssetDatabase.GetAssetPath (obj)) as TextureImporter;
+				if (importer == null)
+					continue;
+				foreach (var editor in editors) {
+					if (editor.target == importer) {
+						var serializedObject = editor.serializedObject;
+						var property=serializedObject.FindProperty ("correctGamma");
+						EditorApplication.delayCall=()=>{
+							EditorApplication.delayCall=()=>{
+								property.boolValue = !property.boolValue;
+								property.boolValue = !property.boolValue;
+								editor.Repaint();
+							};
+						};
+					}
+				}
 			}
 		}
 	}
@@ -287,95 +328,113 @@ public class TextureModifier : AssetPostprocessor {
 
 	[UnityEditor.MenuItem("Assets/Texture Util/Clear Texture Effecter Label",false,20)]
 	static void ClearTextureEffecterLabel(){
+		ApplySettings ();
 		ClearLabel(effecters);
 		SetLabelSetingsDirty ();
 	}
 	[UnityEditor.MenuItem("Assets/Texture Util/Set Label PremultipliedAlpha",false,20)]
 	static void SetLabelPremultipliedAlpha(){
+		ApplySettings ();
 		SetLabel(TextureModifierType.PremultipliedAlpha.ToString(),effecters);
 		SetLabelSetingsDirty ();
 	}
 	[UnityEditor.MenuItem("Assets/Texture Util/Set Label AlphaBleed",false,20)]
 	static void SetLabelAlphaBleed(){
+		ApplySettings ();
 		SetLabel(TextureModifierType.AlphaBleed.ToString(),effecters);
 		SetLabelSetingsDirty ();
 	}
 
 	[UnityEditor.MenuItem("Assets/Texture Util/Clear Texture Modifier Label",false,40)]
 	static void ClearTextureModifierLabel(){
+		ApplySettings ();
 		ClearLabel(modifiers);
 		SetLabelSetingsDirty ();
 	}
 	[UnityEditor.MenuItem("Assets/Texture Util/Set Label FloydSteinberg",false,40)]
 	static void SetLabelFloydSteinberg(){
+		ApplySettings ();
 		SetLabel(TextureModifierType.FloydSteinberg.ToString(),modifiers);
 		SetLabelSetingsDirty ();
 	}
 	[UnityEditor.MenuItem("Assets/Texture Util/Set Label Reduced16bits",false,40)]
 	static void SetLabelReduced16bits(){
+		ApplySettings ();
 		SetLabel(TextureModifierType.Reduced16bits.ToString(),modifiers);
 		SetLabelSetingsDirty ();
 	}
 
 	[UnityEditor.MenuItem("Assets/Texture Util/Clear Texture Output Label",false,60)]
 	static void ClearTextureOutputLabel(){
+		ApplySettings ();
 		ClearLabel(outputs);
 		SetLabelSetingsDirty ();
 	}
     [UnityEditor.MenuItem("Assets/Texture Util/Set Label Convert 16bits", false, 60)]
     static void SetLabelC16bits() {
+		ApplySettings ();
         SetLabel(TextureModifierType.C16bits.ToString(), outputs);
 		SetLabelSetingsDirty ();
 	}
     [UnityEditor.MenuItem("Assets/Texture Util/Set Label Convert Compressed", false, 60)]
     static void SetLabelCCompressed() {
+		ApplySettings ();
         SetLabel(TextureModifierType.CCompressed.ToString(), outputs);
 		SetLabelSetingsDirty ();
 	}
     [UnityEditor.MenuItem("Assets/Texture Util/Set Label Convert Compressed no alpha", false, 60)]
     static void SetLabelCCompressedNA() {
+		ApplySettings ();
         SetLabel(TextureModifierType.CCompressedNA.ToString(), outputs);
 		SetLabelSetingsDirty ();
 	}
     [UnityEditor.MenuItem("Assets/Texture Util/Set Label Convert Compressed with alpha", false, 60)]
     static void SetLabelCCompressedWA() {
+		ApplySettings ();
         SetLabel(TextureModifierType.CCompressedWA.ToString(), outputs);
 		SetLabelSetingsDirty ();
 	}
 #if false
     [UnityEditor.MenuItem("Assets/Texture Util/Set Label Texture 16bits", false, 60)]
 	static void SetLabel16bits(){
+		ApplySettings ();
 		SetLabel(TextureModifierType.T16bits.ToString(),outputs);
 		SetLabelSetingsDirty ();
 	}
 	[UnityEditor.MenuItem("Assets/Texture Util/Set Label Texture 32bits",false,60)]
 	static void SetLabel32bits(){
+		ApplySettings ();
 		SetLabel(TextureModifierType.T32bits.ToString(),outputs);
 		SetLabelSetingsDirty ();
 	}
 	[UnityEditor.MenuItem("Assets/Texture Util/Set Label Texture Compressed",false,60)]
 	static void SetLabelCompressed(){
+		ApplySettings ();
 		SetLabel(TextureModifierType.TCompressed.ToString(),outputs);
 		SetLabelSetingsDirty ();
 	}
     [UnityEditor.MenuItem("Assets/Texture Util/Set Label Texture Compressed no alpha", false, 60)]
     static void SetLabelCompressedNA() {
+		ApplySettings ();
         SetLabel(TextureModifierType.TCompressedNA.ToString(), outputs);
 		SetLabelSetingsDirty ();
 	}
     [UnityEditor.MenuItem("Assets/Texture Util/Set Label Texture Compressed with alpha", false, 60)]
 	static void SetLabelCompressedWA(){
+		ApplySettings ();
 		SetLabel(TextureModifierType.TCompressedWA.ToString(),outputs);
 		SetLabelSetingsDirty ();
 	}
 #endif
 	[UnityEditor.MenuItem("Assets/Texture Util/Set Label Texture PNG",false,60)]
 	static void SetLabelPNG(){
+		ApplySettings ();
 		SetLabel(TextureModifierType.TPNG.ToString(),outputs);
 		SetLabelSetingsDirty ();
 	}
 	[UnityEditor.MenuItem("Assets/Texture Util/Set Label Texture JPG",false,60)]
 	static void SetLabelJPG(){
+		ApplySettings ();
 		SetLabel(TextureModifierType.TJPG.ToString(),outputs);
 		SetLabelSetingsDirty ();
 	}
