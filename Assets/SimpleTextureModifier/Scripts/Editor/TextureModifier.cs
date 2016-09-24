@@ -242,8 +242,9 @@ public class TextureModifier : AssetPostprocessor {
 //		Debug.Log("m_LabelGUIField="+m_LabelGUIField);
 		foreach (var ew in editorWindows) {
 //			Debug.Log("editorWindow="+ew.title);
-			if (ew.title=="UnityEditor.InspectorWindow" || ew.title=="Inspector") { // "UnityEditor.InspectorWindow"<=v4 "Inspector">=v5
-				var labelGUIObject = m_LabelGUIField.GetValue(ew);
+//			if (ew.title=="UnityEditor.InspectorWindow" || ew.title=="Inspector") { // "UnityEditor.InspectorWindow"<=v4 "Inspector">=v5
+			if (ew.GetType().FullName=="UnityEditor.InspectorWindow") {
+                var labelGUIObject = m_LabelGUIField.GetValue(ew);
 				m_CurrentAssetsSetField.SetValue(labelGUIObject,null);
 			}
 		}
